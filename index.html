@@ -534,6 +534,182 @@ body.still *,body.still *::before,body.still *::after{
 body.still [data-r]{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important}
 body.still .split .ch>i{transform:none!important}
 body.still .hl .w{color:var(--ink)}
+
+/* ============================================================
+   16 — MOBILE / TOUCH
+   The sections above are desktop-first. This block adapts layout,
+   type floors and touch affordances for phones. Nothing here
+   disables motion: every canvas, reveal and scroll animation runs
+   on mobile exactly as it does on desktop — the earlier
+   `display:none` rules for the rail and HUD are deliberately
+   re-enabled below, because hiding them left their sparkline
+   canvases sized 0x0 and therefore dead.
+   ============================================================ */
+
+/* the boot lock must track the *dynamic* viewport: mobile browser chrome
+   collapses on scroll, and 100vh would leave a scrollable dead gap */
+body.locked{height:100dvh}
+
+@media(max-width:1000px){
+  /* Section 09 collapses .duo to a single column at this width but leaves
+     .duo-stick sticky. Once both children share one column the pinned
+     visual stops moving while .duo-flow scrolls straight over the top of
+     it — the year readout lands on the degree rows, and the NODES/EDGES
+     caption lands mid-paragraph. Sticky only makes sense *beside* the
+     flow, so above it the panel has to scroll like everything else. */
+  .duo-stick{position:relative;top:auto;height:auto;padding:24px 0 4px}
+  .duo-flow{padding:2vh 0 9vh}
+  /* square visual + a tall phone would push the text a whole screen down */
+  .visual-box{max-height:46vh}
+}
+
+/* burger lives in the nav on desktop but is only painted on mobile */
+.nav-burger{display:none;position:relative;width:42px;height:42px;margin-right:-9px;
+  align-items:center;justify-content:center;flex:0 0 auto}
+.nav-burger i{position:absolute;left:11px;width:20px;height:1.5px;background:var(--ink);
+  transition:transform .38s var(--ease),opacity .28s var(--ease)}
+.nav-burger i:nth-child(1){transform:translateY(-5px)}
+.nav-burger i:nth-child(3){transform:translateY(5px)}
+.nav-burger.open i:nth-child(1){transform:rotate(45deg)}
+.nav-burger.open i:nth-child(2){opacity:0}
+.nav-burger.open i:nth-child(3){transform:rotate(-45deg)}
+
+@media(max-width:920px){
+  .nav-burger{display:flex}
+
+  /* .nav-links was display:none up in section 03; promote it to a drawer.
+     Same links, same markup — only the presentation changes. */
+  .nav-links{display:flex;position:fixed;top:0;right:0;z-index:80;
+    width:min(78vw,320px);height:100dvh;flex-direction:column;justify-content:center;
+    gap:4px;padding:0 clamp(24px,7vw,40px);
+    background:rgba(8,8,11,.9);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+    border-left:1px solid var(--line);
+    transform:translateX(101%);opacity:0;pointer-events:none;
+    transition:transform .52s var(--ease),opacity .34s var(--ease)}
+  .nav-links.open{transform:none;opacity:1;pointer-events:auto}
+  /* 48px rows clear the 44px touch-target floor without looking padded */
+  .nav-links a{font-size:12px;letter-spacing:.22em;min-height:48px;display:flex;align-items:center}
+  .nav-links a::after{bottom:14px}
+  .nav-scrim{position:fixed;inset:0;z-index:79;background:rgba(4,4,6,.5);
+    opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
+  .nav-scrim.open{opacity:1;pointer-events:auto}
+}
+
+@media(max-width:900px){
+  /* --- rail: keep it, just slim it -------------------------------
+     Tick labels are hover-revealed, which touch has no equivalent for,
+     so the labels go and the ticks stay as tappable progress marks. */
+  .rail{display:block;right:9px;z-index:60}
+  .rail-line{height:24vh;margin-right:4px}
+  .rail-tick::after{display:none}
+  .rail-tick{right:-8px;width:15px;height:2px}
+  .rail-tick.on{width:19px;right:-13px}
+  /* The vertical EPOCH readout printed straight over card text: the rail is
+     fixed at z-index 60 and the academy cards translate horizontally beneath
+     it, so no amount of gutter can keep them clear — a card can sit anywhere
+     under it mid-scroll. The counter is a numeric readout, so it goes; the
+     rail's actual animation (fill height + activating ticks) is untouched. */
+  .rail-epoch{display:none}
+
+  /* --- HUD cards: restored, re-laid as a telemetry row -------------
+     Stacking them vertically collided with the headline on shorter
+     phones, so they sit side by side across the top instead. Both stay
+     mounted, which matters because their sparkline canvases measure
+     themselves on init and were sizing 0x0 while the cards were hidden. */
+  /* flex column + auto-margin on the spark pins both sparklines to the
+     card floor, so the pair stays level however many lines the caption
+     wraps to — the two captions are different lengths */
+  .hud{display:flex;flex-direction:column;min-height:152px;
+    width:min(154px,calc(50vw - 34px));padding:9px 11px 11px;border-radius:12px}
+  .hud-1{top:7%;left:var(--pad);right:auto}
+  .hud-2{top:7%;right:var(--pad);left:auto}
+  .hud-h{letter-spacing:.1em}
+  .hud-v{font-size:20px;margin-top:6px}
+  .hud-spark{height:17px;margin-top:auto;padding-top:6px}
+  /* :hover lift is meaningless on touch and can stick after a tap */
+  .hud:hover{transform:none;border-color:rgba(255,255,255,.1);background:rgba(16,17,23,.5)}
+}
+
+@media(max-width:760px){
+  /* --- hero legibility -------------------------------------------
+     The figure is centred, so at phone widths its head and shoulders
+     land exactly behind the headline and the meta lines. Lift the
+     framing so the face sits above the text, and deepen the scrim
+     so the type has a solid ground to sit on. */
+  .fig-media video,.fig-media img{object-position:center 16%}
+  /* the meta row sits at ~42-49% of the viewport and the headline at ~52%,
+     so the scrim has to be dense by 40% — not 58% — or the figure's neck
+     and shoulder show straight through the type */
+  .fig-fade{background:linear-gradient(180deg,
+    rgba(5,5,7,.86) 0%,rgba(5,5,7,.26) 14%,rgba(5,5,7,.42) 30%,
+    rgba(5,5,7,.88) 42%,rgba(5,5,7,.96) 56%,rgba(5,5,7,.98) 72%)}
+
+  .hero-top{gap:6px;margin-bottom:16px}
+  .hero-sub{margin-top:18px;gap:22px}
+  .hero-sub p{max-width:none}
+  .hero-content{padding-bottom:clamp(26px,5vh,44px)}
+
+  /* --- type floor -----------------------------------------------
+     The mono labels run 9–10.5px, which is legible on a desktop
+     monitor and not on a phone held at arm's length. 11px floor,
+     with letter-spacing eased back since tracking costs width. */
+  .mono,.hud-h,.hud-f,.chap-no,.fact,.yr-badge,.aclab,
+  .scroll-cue,.nav-tog,.boot-meta,.foot-note{font-size:11px!important;letter-spacing:.14em}
+  .hud-h,.hud-f{font-size:10.5px!important}
+
+  /* --- touch targets ---------------------------------------------
+     Footer and chapter links measured 18–21px tall; pad them to 44. */
+  .foot-grid a,.foot-bar a{min-height:44px;display:inline-flex;align-items:center}
+  .nav-logo{min-height:44px;display:inline-flex;align-items:center}
+
+  /* the custom cursor is a desktop conceit; pointer:coarse already
+     hides it, but width is the more reliable signal on hybrid devices */
+  .cursor,.cursor-ring{display:none!important}
+
+  /* --- skills constellation ---------------------------------------
+     Labels are nowrap at desktop, where the frame is wide enough.
+     At 335px a single label could be 200px, so the cluster became a
+     pile-up. Allowing two lines roughly halves each label's width;
+     the JS clamp then guarantees none of them leave the frame. */
+  .node{white-space:normal;max-width:41%;text-align:center;line-height:1.28;
+    font-size:9.5px;letter-spacing:.04em;padding:4px 8px}
+  /* 35 labels need room to be pushed apart; at 660px the frame was ~52% full
+     by area and the relaxation pass had nowhere to send them */
+  .constel{height:min(840px,96vh)}
+
+  /* The 340px reveal cap was measured against desktop line-wrapping. At
+     phone width the SARA card's detail wraps to 358px, so the last row was
+     silently clipped. Raise the cap with headroom for narrower handsets. */
+  .lab.open .lab-more{max-height:520px}
+}
+
+@media(max-width:400px){
+  /* Width is left to the min(154px, 50vw - 34px) above, which already holds a
+     steady ~28px gutter from 320px up — an override here only made the pair
+     wider and pushed them into each other. Just relieve the inner padding so
+     the caption has room on the narrowest handsets. */
+  .hud{padding:8px 9px 10px}
+  .hud-v{font-size:18px}
+  .hud-h{letter-spacing:.06em}
+}
+
+/* landscape phones are short, not narrow: the sticky 100svh panels
+   need to breathe or the headline and its rule collide */
+@media(max-height:520px) and (orientation:landscape){
+  #genesis{min-height:440px}
+  .thesis-copy{font-size:clamp(1.4rem,3.6vw,2.4rem)}
+  .duo-stick{height:auto;position:relative;padding:34px 0}
+  /* Landscape is short, not narrow — there is plenty of width here, so the
+     cards stay mounted (hiding them sized their sparkline canvases 0x0,
+     which is the exact dead-canvas problem this block exists to avoid).
+     Pinned high on both flanks, they clear the headline vertically. */
+  .hud{display:flex;top:5%;min-height:0}
+  .hud-1{left:var(--pad);right:auto}
+  .hud-2{right:var(--pad);left:auto}
+  .hud-v{font-size:18px;margin-top:4px}
+  .hud-f{display:none}          /* the caption is what made the card tall */
+  .hud-spark{height:15px;padding-top:5px}
+}
 </style>
 </head>
 <body>
@@ -546,7 +722,7 @@ body.still .hl .w{color:var(--ink)}
     <div class="boot-bar"><i id="bootBar"></i></div>
     <div class="boot-meta"><span id="bootPct">000%</span><span>palash.v2 · checkpoint</span></div>
   </div>
-  <div class="boot-skip">click anywhere to skip</div>
+  <div class="boot-skip">tap anywhere to skip</div>
 </div>
 
 <div class="grain"></div>
@@ -569,7 +745,7 @@ body.still .hl .w{color:var(--ink)}
 <!-- ============ NAV ============ -->
 <header class="nav" id="nav">
   <a href="#genesis" class="nav-logo"><span></span>P·PANCHAL</a>
-  <nav class="nav-links">
+  <nav class="nav-links" id="navLinks">
     <a href="#origin">Education</a>
     <a href="#academy">Experience</a>
     <a href="#deployed">Enterprise AI</a>
@@ -578,7 +754,10 @@ body.still .hl .w{color:var(--ink)}
     <a href="#now">Contact</a>
   </nav>
   <button class="nav-tog" id="motionTog">Motion: On</button>
+  <button class="nav-burger" id="navBurger" aria-label="Open menu"
+          aria-expanded="false" aria-controls="navLinks"><i></i><i></i><i></i></button>
 </header>
+<div class="nav-scrim" id="navScrim"></div>
 
 <!-- ============ RAIL ============ -->
 <aside class="rail">
@@ -1129,7 +1308,7 @@ body.still .hl .w{color:var(--ink)}
         No face, no finished state — just a system that keeps getting a little
         less wrong. If you are building something that learns, I would like to hear about it.
       </p>
-      <a class="now-cta" href="mailto:palashpan03@gmail.com?subject=Let%27s%20build%20something%20that%20learns"
+      <a class="now-cta" href="#contact"
          data-magnet data-r="up" data-d="500"><span>Let's build →</span></a>
     </div>
   </div>
@@ -1140,7 +1319,7 @@ body.still .hl .w{color:var(--ink)}
 <!-- ============================================================
      FOOTER
      ============================================================ -->
-<footer>
+<footer id="contact">
   <div class="wrap">
     <div class="foot-grid">
       <div>
@@ -1160,8 +1339,8 @@ body.still .hl .w{color:var(--ink)}
         <ul class="foot-links">
           <li><a href="mailto:palashpan03@gmail.com">palashpan03@gmail.com</a></li>
           <li><a href="https://github.com/palashpanchal03" target="_blank" rel="noopener">GitHub ↗</a></li>
-          <li><a href="https://linkedin.com/in/palashpanchal" target="_blank" rel="noopener">LinkedIn ↗</a></li>
-          <li><a href="../../output/resume/Palash_Panchal_Resume_Updated.pdf" target="_blank" rel="noopener">Résumé (PDF) ↗</a></li>
+          <li><a href="https://www.linkedin.com/in/palashpanchal/" target="_blank" rel="noopener">LinkedIn ↗</a></li>
+          <li><a href="assets/Palash_Panchal_Resume.pdf" target="_blank" rel="noopener">Résumé (PDF) ↗</a></li>
         </ul>
       </div>
       <div>
@@ -1364,6 +1543,9 @@ $$('[data-r], .split, .line-grow').forEach(el=>revealIO.observe(el));
   document.body.classList.add('locked');
   el.addEventListener('click', finish);
   addEventListener('wheel', finish, { once:true, passive:true });
+  // touch fires no wheel event, so a flick at the boot screen would otherwise
+  // do nothing until the sequence finished on its own
+  addEventListener('touchstart', finish, { once:true, passive:true });
 
   let i = 0;
   const step = ()=>{
@@ -1459,6 +1641,65 @@ $('#motionTog').addEventListener('click', function(){
   this.textContent = 'Motion: ' + (S.still ? 'Off' : 'On');
   const v = $('#heroVideo'); if(v){ S.still ? v.pause() : v.play().catch(()=>{}); }
 });
+
+/* ============================================================
+   MOBILE NAV DRAWER
+   The link row is hidden below 920px and re-presented as a drawer;
+   this only wires the open/close state. Body scroll is frozen while
+   it is open so the scroll-driven sections behind don't advance.
+   ============================================================ */
+(function mobileNav(){
+  const burger = $('#navBurger'), links = $('#navLinks'), scrim = $('#navScrim');
+  if(!burger || !links) return;
+
+  const set = open => {
+    burger.classList.toggle('open', open);
+    links.classList.toggle('open', open);
+    if(scrim) scrim.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+
+  burger.addEventListener('click', ()=> set(!links.classList.contains('open')));
+  if(scrim) scrim.addEventListener('click', ()=> set(false));
+  // any destination tap closes it, so the anchor scroll is visible
+  links.addEventListener('click', e=>{ if(e.target.closest('a')) set(false); });
+  addEventListener('keydown', e=>{ if(e.key === 'Escape') set(false); });
+  // returning to desktop width must not leave the drawer latched open
+  addEventListener('resize', ()=>{ if(innerWidth > 920) set(false); });
+})();
+
+/* ============================================================
+   EPILOGUE CTA
+   The button used to fire a mailto:, which hands the visitor to an
+   external mail client and loses them. It now lands on the footer's
+   contact block. scroll-behavior is auto globally because animating
+   long jumps through the pinned sections looks broken, so the easing
+   is scoped to this one short hop. The href stays a real anchor, so
+   the jump still works if this script never runs.
+   ============================================================ */
+(function epilogueCta(){
+  const cta = $('.now-cta'), target = $('#contact');
+  if(!cta || !target) return;
+
+  cta.addEventListener('click', e=>{
+    // under reduced motion, let the plain #contact anchor jump
+    if(S.still || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const y0 = scrollY;
+    e.preventDefault();
+    target.scrollIntoView({ behavior:'smooth', block:'start' });
+
+    /* Smooth scrolling is compositor-driven and is a silent no-op in some
+       contexts (backgrounded tabs, some embedded webviews). Since we already
+       cancelled the anchor, verify the scroll actually started and jump
+       outright if it did not — the button must never do nothing. */
+    setTimeout(()=>{
+      if(scrollY === y0) target.scrollIntoView({ block:'start' });
+    }, 260);
+  });
+})();
 
 /* ============================================================
    COUNTERS
@@ -2019,8 +2260,11 @@ const BAYER = [0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5].map(v=>(v+.5)/16);
 
 $$('[data-viz]').forEach(cv=>{
   const kind = cv.dataset.viz;
-  let g = fit(cv, 1);
-  RESIZE.push(()=>{ g = fit(cv, 1); });
+  /* these were capped at 1x, which reads fine on a 1x monitor but visibly
+     soft on a 2x/3x phone. They are only ~310x190 CSS px, so 2x costs
+     ~240k pixels a frame — cheap enough for the throttled redraws below. */
+  let g = fit(cv, 2);
+  RESIZE.push(()=>{ g = fit(cv, 2); });
 
   /* --- CURIOSITY: ordered-dither retrieval field --- */
   if(kind === 'dither'){
@@ -2262,8 +2506,15 @@ $$('[data-spark]').forEach(cv=>{
 
   const size = ()=>{
     const r = cv.getBoundingClientRect();
-    cv.width  = Math.max(1, Math.min(1600, Math.round(r.width)));
-    cv.height = Math.max(1, Math.min(1600, Math.round(r.height)));
+    /* Clamping width and height independently squashed the field whenever one
+       edge hit the cap — on a phone this element is ~375x1540, so height
+       clipped and width didn't. Scale both by one factor instead, so u_res
+       stays truthful and the aspect the shader samples is the real one. */
+    const d = Math.min(devicePixelRatio || 1, 2);
+    const w = r.width * d, h = r.height * d;
+    const k = Math.min(1, 1600 / Math.max(w, h, 1));
+    cv.width  = Math.max(1, Math.round(w * k));
+    cv.height = Math.max(1, Math.round(h * k));
     gl.viewport(0,0,cv.width,cv.height);
     gl.uniform2f(uRes, cv.width, cv.height);
   };
@@ -2310,9 +2561,86 @@ $$('[data-spark]').forEach(cv=>{
       el.addEventListener('pointerenter', ()=> setActive(c.id));
       el.addEventListener('pointerleave', ()=> setActive(null));
       box.appendChild(el);
-      nodes.push({ el, bx, by, cat:c.id, color:c.c, ph:Math.random()*6.28, x:0, y:0 });
+      // bx0/by0 keep the authored fraction so repeated resizes re-clamp from
+      // the original intent instead of compounding the previous clamp
+      nodes.push({ el, bx, by, bx0:bx, by0:by, cat:c.id, color:c.c, ph:Math.random()*6.28, x:0, y:0 });
     });
   });
+
+  /* These fractions were tuned against a wide desktop frame. On a phone the
+     frame is ~335px while labels like "Multi-agent orchestration" render
+     200px, so a node centred at 7% hung 77px off the left edge and several
+     collided. Clamp each fraction by the node's own half-size — including the
+     ±7px idle float — so nothing can leave the frame. bx/by must end up
+     holding the clamped values because the canvas draws its dots and links
+     from them, and they have to agree with where the element actually sits. */
+  /* Idle drift amplitude. Two neighbours can close on each other by 2x this,
+     so it is both the separation margin below and the tick amplitude — they
+     must agree or the solve is undone by the animation. Phones get a smaller
+     drift because the frame is too dense to spend 14px of slack per axis. */
+  let FLOAT = 7;
+  const EDGE = 4;
+  const setFloat = ()=>{ FLOAT = innerWidth < 760 ? 3 : 7; };
+
+  const clampInside = (bw, bh)=>{
+    nodes.forEach(n=>{
+      const hw = n.el.offsetWidth/2 + FLOAT + EDGE, hh = n.el.offsetHeight/2 + FLOAT + EDGE;
+      const loX = hw/bw, hiX = 1 - loX, loY = hh/bh, hiY = 1 - loY;
+      // a label wider than the frame itself can only be centred
+      n.bx = loX >= hiX ? .5 : clamp(n.bx, loX, hiX);
+      n.by = loY >= hiY ? .5 : clamp(n.by, loY, hiY);
+    });
+  };
+
+  /* Clamping alone stopped labels leaving the frame but left them stacked on
+     each other: 35 labels fill roughly half the area of a phone-width frame,
+     and the authored clusters assume desktop spacing. One relaxation pass
+     separates any overlapping pair along its axis of least penetration, which
+     preserves the clustered composition instead of re-laying it out. */
+  const separate = (bw, bh)=>{
+    const pad = FLOAT*2 + 3;   // room for both neighbours to drift and still clear
+    const size = nodes.map(n=>({ w:n.el.offsetWidth + pad, h:n.el.offsetHeight + pad }));
+    for(let pass=0; pass<70; pass++){
+      let moved = false;
+      for(let i=0;i<nodes.length;i++){
+        for(let j=i+1;j<nodes.length;j++){
+          const a = nodes[i], b = nodes[j];
+          let dx = (b.bx - a.bx)*bw, dy = (b.by - a.by)*bh;
+          const mw = (size[i].w + size[j].w)/2, mh = (size[i].h + size[j].h)/2;
+          // degenerate exact overlap needs an arbitrary nudge to break the tie
+          if(dx === 0 && dy === 0){ dx = 0.01; dy = 0.01; }
+          const ox = mw - Math.abs(dx), oy = mh - Math.abs(dy);
+          if(ox <= 0 || oy <= 0) continue;   // boxes already clear
+          moved = true;
+          if(ox/mw < oy/mh){                 // cheaper to part horizontally
+            const push = (ox/2 + .5) * (dx < 0 ? -1 : 1) / bw;
+            a.bx -= push; b.bx += push;
+          } else {
+            const push = (oy/2 + .5) * (dy < 0 ? -1 : 1) / bh;
+            a.by -= push; b.by += push;
+          }
+        }
+      }
+      clampInside(bw, bh);                   // keep the frame honoured each pass
+      if(!moved) break;
+    }
+  };
+
+  const layout = ()=>{
+    setFloat();
+    const bw = box.clientWidth, bh = box.clientHeight;
+    if(!bw || !bh) return;
+    nodes.forEach(n=>{ n.bx = n.bx0; n.by = n.by0; });  // re-solve from intent
+    clampInside(bw, bh);
+    separate(bw, bh);
+    nodes.forEach(n=>{
+      n.el.style.left = (n.bx*100).toFixed(2) + '%';
+      n.el.style.top  = (n.by*100).toFixed(2) + '%';
+    });
+  };
+  layout();
+  // fonts can land after first layout and change every label's width
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 
   function setActive(id, lock){
     active = id;
@@ -2321,14 +2649,14 @@ $$('[data-spark]').forEach(cv=>{
     $$('.cat', catBox).forEach((chip,i)=> chip.classList.toggle('on', CATS[i].id === id));
   }
 
-  RESIZE.push(()=>{ g = fit(cv); });
+  RESIZE.push(()=>{ g = fit(cv); layout(); });
 
   tick(box, (t)=>{
     const { ctx, w, h } = g;
     ctx.clearRect(0,0,w,h);
 
     nodes.forEach(n=>{
-      const dx = Math.sin(t*.42 + n.ph) * 7, dy = Math.cos(t*.35 + n.ph) * 7;
+      const dx = Math.sin(t*.42 + n.ph) * FLOAT, dy = Math.cos(t*.35 + n.ph) * FLOAT;
       n.x = n.bx*w + dx; n.y = n.by*h + dy;
       n.el.style.transform = `translate(-50%,-50%) translate(${dx.toFixed(1)}px,${dy.toFixed(1)}px)`;
     });

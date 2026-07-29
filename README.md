@@ -7,11 +7,15 @@ CSS, 2D canvas and WebGL live inside `index.html`.
 
 ```
 .
-├─ index.html            ← the whole site
+├─ index.html                     ← the whole site
 └─ assets/
-   ├─ metal-human.mp4    ← hero background loop
-   └─ metal-human.jpg    ← poster still / finale figure source
+   ├─ metal-human.mp4             ← hero background loop
+   ├─ metal-human.jpg             ← poster still / finale figure source
+   └─ Palash_Panchal_Resume.pdf   ← linked from the footer
 ```
+
+Responsive down to 320px: the layout, type floors, touch targets and every
+canvas animation are adapted for phones rather than scaled down.
 
 ## Local preview
 
